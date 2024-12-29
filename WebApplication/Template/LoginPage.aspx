@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Blog - Selecao Bootstrap Template</title>
+    <title>Login Page</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -80,20 +80,34 @@
                 <asp:TextBox ID="txtEmail" runat="server" Placeholder="Email" Width="100%" />
             </div>
 
-            <div style="margin-bottom: 20px;">
+            <div style="margin-bottom: 20px; position: relative;">
                 <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" Placeholder="Password" Width="100%" />
+                <!-- Şifre Göster/Gizle Butonu -->
+                <button type="button" style="position: absolute; right: -50px; top: 0px;" onclick="togglePasswordVisibility()">👁</button>
             </div>
 
             <div style="margin-bottom: 20px;">
                 <asp:Button ID="btnLogin" runat="server" Text="Login" OnClick="btnLogin_Click" />
-            </div>
-            <div style="margin-bottom: 20px;">
                 <asp:Button ID="btnSignUp" runat="server" Text="SignUp" OnClick="btnSignUp_Click" />
+                <asp:Button ID="btnPasswordChange" runat="server" Text="PasswordChange" OnClick="btnPasswordChange_Click" /> 
             </div>
+            
+
 
             <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
         </div>
     </form>
+
+    <script>
+        function togglePasswordVisibility() {
+            const passwordField = document.getElementById('<%= txtPassword.ClientID %>');
+            if (passwordField.type === 'password') {
+                passwordField.type = 'text'; // Şifreyi yazı haline getir
+            } else {
+                passwordField.type = 'password'; // Şifreyi gizle
+            }
+        }
+    </script>
 
 
     <!-- End Content -->
@@ -102,7 +116,8 @@
     <footer id="footer" class="footer dark-background">
         <div class="container">
             <h3 class="sitename">Zeus</h3>
-            <p>Et aut eum quis fuga eos sunt ipsa nihil. Labore corporis magni eligendi fuga maxime saepe commodi placeat.</p>
+            <p>Fakat birisi kurtaracak gelip bi' gün Atam gibi</p>
+            <p>-Hidra</p>
             <div class="social-links d-flex justify-content-center">
                 <a href=""><i class="bi bi-twitter-x"></i></a>
                 <a href=""><i class="bi bi-facebook"></i></a>

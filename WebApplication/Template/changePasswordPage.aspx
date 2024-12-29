@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SignUp.aspx.cs" Inherits="WebApplication.Template.SignUp" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="changePasswordPage.aspx.cs" Inherits="WebApplication.Template.changePasswordPage" %>
 
 <!DOCTYPE html>
 
@@ -6,7 +6,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>SignUp Page</title>
+    <title>Password Change Page</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -51,7 +51,6 @@
             </a>
 
             <nav id="navmenu" class="navmenu">
-                
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
@@ -62,76 +61,60 @@
         <!-- Page Title -->
         <div class="page-title dark-background">
             <div class="container position-relative">
-                <h1>Home</h1>
+                <h1>Password Change</h1>
                 <nav class="breadcrumbs">
                 </nav>
             </div>
         </div>
         <!-- End Page Title -->
+
+
+        <!-- Content -->
+
+
     </main>
-
-
-
 
     <form id="form1" runat="server">
         <div style="margin: 100px auto; width: 300px; text-align: center;">
-            <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
-
-
-
-
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtName" runat="server" Placeholder="Name" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtSurName" runat="server" Placeholder="Surname" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px; position: relative;">
-                <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" Placeholder="Password" Width="100%" />
-                <!-- Şifre Göster/Gizle Butonu -->
-                <button type="button" style="position: absolute; right: -50px; top: 0px;" onclick="togglePasswordVisibility()">👁</button>
-            </div>
+            <!-- Email Alanı -->
             <div style="margin-bottom: 20px;">
                 <asp:TextBox ID="txtEmail" runat="server" Placeholder="Email" Width="100%" />
             </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtphoneNumber" runat="server" Placeholder="Phone" Width="100%" />
+
+            <!-- Mevcut Şifre Alanı -->
+            <div style="margin-bottom: 20px; position: relative;">
+                <asp:TextBox ID="txtCurrentPassword" runat="server" TextMode="Password" Placeholder="Current Password" Width="100%" />
+                <!-- Şifre Göster/Gizle Butonu -->
+                <button type="button" style="position: absolute; right: -50px; top: 0px;"
+                    onclick="togglePasswordVisibility('<%= txtCurrentPassword.ClientID %>')">
+                    👁
+                </button>
             </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtCity" runat="server" Placeholder="City" Width="100%" />
+
+            <!-- Yeni Şifre Alanı -->
+            <div style="margin-bottom: 20px; position: relative;">
+                <asp:TextBox ID="txtNewPassword" runat="server" TextMode="Password" Placeholder="New Password" Width="100%" />
+                <!-- Şifre Göster/Gizle Butonu -->
+                <button type="button" style="position: absolute; right: -50px; top: 0px;"
+                    onclick="togglePasswordVisibility('<%= txtNewPassword.ClientID %>')">
+                    👁
+                </button>
             </div>
 
+            <!-- Şifre Değiştir Butonu -->
             <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtBirth" runat="server" TextMode="Date" Placeholder="Date" Width="100%" />
+                <asp:Button ID="btnChangePassword" runat="server" Text="Change Password" OnClick="btnChangePassword_Click" />
+                <asp:Button ID="btnExit" runat="server" Text="Exit" OnClick="btnExit_Click" />
             </div>
 
-            <script>
-                // Sayfa yüklendiğinde tarih aralığını ayarla
-                document.addEventListener('DOMContentLoaded', function () {
-                    const dateField = document.getElementById('<%= txtBirth.ClientID %>');
-                    const today = new Date();
-
-                    // Min tarih (örn: 1900-01-01)
-                    const minDate = '1900-01-01';
-
-                    // Max tarih (örn: bugünkü tarih)
-                    const maxDate = today.toISOString().split('T')[0];
-
-                    // Min ve Max değerleri ayarla
-                    dateField.setAttribute('min', minDate);
-                    dateField.setAttribute('max', maxDate);
-                });
-            </script>
-            <div style="margin-bottom: 20px;">
-                <asp:Button ID="btnSignUp" runat="server" Text="SignUp" OnClick="btnSignUp_Click" />
-                <asp:Button ID="btnBack" runat="server" Text="Back" OnClick="btnBack_Click" />
-                
-            </div>
+            <!-- Mesaj Alanı -->
+            <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
         </div>
     </form>
+
     <script>
-        function togglePasswordVisibility() {
-            const passwordField = document.getElementById('<%= txtPassword.ClientID %>');
+        function togglePasswordVisibility(passwordFieldId) {
+            const passwordField = document.getElementById(passwordFieldId);
             if (passwordField.type === 'password') {
                 passwordField.type = 'text'; // Şifreyi yazı haline getir
             } else {
@@ -141,16 +124,14 @@
     </script>
 
 
-
-
-
-
+    <!-- End Content -->
 
 
     <footer id="footer" class="footer dark-background">
         <div class="container">
-            <h3 class="sitename">Selecao</h3>
-            <p>Et aut eum quis fuga eos sunt ipsa nihil. Labore corporis magni eligendi fuga maxime saepe commodi placeat.</p>
+            <h3 class="sitename">Zeus</h3>
+            <p>Fakat birisi kurtaracak gelip bi' gün Atam gibi</p>
+            <p>-Hidra</p>
             <div class="social-links d-flex justify-content-center">
                 <a href=""><i class="bi bi-twitter-x"></i></a>
                 <a href=""><i class="bi bi-facebook"></i></a>

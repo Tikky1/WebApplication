@@ -1,12 +1,15 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SignUp.aspx.cs" Inherits="WebApplication.Template.SignUp" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="UserPage.aspx.cs" Inherits="WebApplication.Template.UserPage" Async="true" %>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+
+
+
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>SignUp Page</title>
+    <title>AdminPanelForAdmins</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -37,6 +40,10 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+
+
+    <script src="Scripts/jquery-3.6.0.min.js"></script>
+
 </head>
 
 <body class="Main-page">
@@ -44,14 +51,20 @@
     <header id="header" class="header d-flex align-items-center fixed-top">
         <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
-            <a href="Main.aspx" class="logo d-flex align-items-center">
+            <a href="AdminPanel.aspx" class="logo d-flex align-items-center">
                 <!-- Uncomment the line below if you also wish to use an image logo -->
                 <!-- <img src="assets/img/logo.png" alt=""> -->
-                <h1 class="sitename">Zeus</h1>
+                <h1 class="sitename">ZeusAdmin</h1>
             </a>
 
             <nav id="navmenu" class="navmenu">
-                
+                <ul>
+                    <li><a href="UserPage.aspx">Users</a></li>
+                    <li><a href="LogoutPage.aspx">Exit</a></li>
+                </ul>
+
+
+
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
@@ -71,74 +84,36 @@
     </main>
 
 
+    <!-- Content -->
 
-
-    <form id="form1" runat="server">
-        <div style="margin: 100px auto; width: 300px; text-align: center;">
-            <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
-
-
-
-
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtName" runat="server" Placeholder="Name" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtSurName" runat="server" Placeholder="Surname" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px; position: relative;">
-                <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" Placeholder="Password" Width="100%" />
-                <!-- Şifre Göster/Gizle Butonu -->
-                <button type="button" style="position: absolute; right: -50px; top: 0px;" onclick="togglePasswordVisibility()">👁</button>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtEmail" runat="server" Placeholder="Email" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtphoneNumber" runat="server" Placeholder="Phone" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtCity" runat="server" Placeholder="City" Width="100%" />
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtBirth" runat="server" TextMode="Date" Placeholder="Date" Width="100%" />
-            </div>
-
-            <script>
-                // Sayfa yüklendiğinde tarih aralığını ayarla
-                document.addEventListener('DOMContentLoaded', function () {
-                    const dateField = document.getElementById('<%= txtBirth.ClientID %>');
-                    const today = new Date();
-
-                    // Min tarih (örn: 1900-01-01)
-                    const minDate = '1900-01-01';
-
-                    // Max tarih (örn: bugünkü tarih)
-                    const maxDate = today.toISOString().split('T')[0];
-
-                    // Min ve Max değerleri ayarla
-                    dateField.setAttribute('min', minDate);
-                    dateField.setAttribute('max', maxDate);
-                });
-            </script>
-            <div style="margin-bottom: 20px;">
-                <asp:Button ID="btnSignUp" runat="server" Text="SignUp" OnClick="btnSignUp_Click" />
-                <asp:Button ID="btnBack" runat="server" Text="Back" OnClick="btnBack_Click" />
+    <form id="Form1" runat="server" class="main-panel">
+        <div style="display: flex; justify-content: center; align-items: center; height: 50vh;">
+            <asp:GridView ID="gvUsers" runat="server" AutoGenerateColumns="False"
+                OnRowEditing="gvUsers_RowEditing"
+                OnRowUpdating="gvUsers_RowUpdating"
+                OnRowCancelingEdit="gvUsers_RowCancelingEdit"
                 
-            </div>
+                DataKeyNames="Id">
+                <Columns>
+                    <asp:BoundField DataField="Id" HeaderText="ID" ReadOnly="True" />
+                    <asp:BoundField DataField="name" HeaderText="Name" />
+                    <asp:BoundField DataField="surname" HeaderText="Surname" />
+                    <asp:BoundField DataField="email" HeaderText="Email" />
+                    <asp:CheckBoxField DataField="isActive" HeaderText="Active Status" />
+                    <asp:CheckBoxField DataField="isAdmin" HeaderText="Admin Status" />
+                    <asp:BoundField DataField="phoneNumber" HeaderText="Phone Number" />
+                    <asp:BoundField DataField="city" HeaderText="City" />
+                    <asp:CommandField ShowEditButton="True"/>
+                </Columns>
+            </asp:GridView>
+
+            <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
         </div>
+
+
+
     </form>
-    <script>
-        function togglePasswordVisibility() {
-            const passwordField = document.getElementById('<%= txtPassword.ClientID %>');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text'; // Şifreyi yazı haline getir
-            } else {
-                passwordField.type = 'password'; // Şifreyi gizle
-            }
-        }
-    </script>
+
 
 
 
@@ -149,8 +124,9 @@
 
     <footer id="footer" class="footer dark-background">
         <div class="container">
-            <h3 class="sitename">Selecao</h3>
-            <p>Et aut eum quis fuga eos sunt ipsa nihil. Labore corporis magni eligendi fuga maxime saepe commodi placeat.</p>
+            <h3 class="sitename">Zeus</h3>
+            <p>Fakat birisi kurtaracak gelip bi' gün Atam gibi</p>
+            <p>-Hidra</p>
             <div class="social-links d-flex justify-content-center">
                 <a href=""><i class="bi bi-twitter-x"></i></a>
                 <a href=""><i class="bi bi-facebook"></i></a>

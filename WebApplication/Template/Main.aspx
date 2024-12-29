@@ -1,15 +1,15 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Main.aspx.cs" Inherits="WebApplication.Template.Main" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Main.aspx.cs" Inherits="WebApplication.Template.Main" Async="true" %>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    
+
 
 
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>Blog - Selecao Bootstrap Template</title>
+    <title>Zeus</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -59,26 +59,7 @@
 
             <nav id="navmenu" class="navmenu">
                 <ul>
-                    <li><a href="#hero">Home</a></li>
-                    <li><a href="#about">About</a></li>
-                    <li><a href="#services">Services</a></li>
-                    <li class="dropdown"><a href="#"><span>Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                        <ul>
-                            <li><a href="#">Dropdown 1</a></li>
-                            <li class="dropdown"><a href="#"><span>Deep Dropdown</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                                <ul>
-                                    <li><a href="#">Deep Dropdown 1</a></li>
-                                    <li><a href="#">Deep Dropdown 2</a></li>
-                                    <li><a href="#">Deep Dropdown 3</a></li>
-                                    <li><a href="#">Deep Dropdown 4</a></li>
-                                    <li><a href="#">Deep Dropdown 5</a></li>
-                                </ul>
-                            </li>
-                            <li><a href="#">Dropdown 2</a></li>
-                            <li><a href="#">Dropdown 3</a></li>
-                            <li><a href="#">Dropdown 4</a></li>
-                        </ul>
-                    </li>
+                    <li><a href="LogoutPage.aspx">Exit</a></li>
                 </ul>
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
@@ -116,20 +97,47 @@
         </div>
 
         <!-- Yorum Paneli -->
-        <div class="comment-panel" style="margin: 100px auto; width: 300px; text-align: center;">
-            <h2>Yorumlar</h2>
-            <div id="commentsContainer" runat="server" class="comments">
-                <!-- Yorumlar burada dinamik olarak yüklenecek -->
-            </div>
+        <div style="margin: 20px;">
+            <!-- Kullanıcı Yorumu Girişi -->
+            <h3>Yorum Ekle</h3>
+            <asp:TextBox ID="txtComment" runat="server" TextMode="MultiLine" Rows="4" Width="100%" Placeholder="Yorumunuzu buraya yazın"></asp:TextBox>
+            <asp:Button ID="btnAddComment" runat="server" Text="Yorumu Kaydet" OnClick="btnAddComment_Click" />
+            <asp:Label ID="lblMessage" runat="server" ForeColor="Green"></asp:Label>
 
-            <div class="add-comment">
-                <h3>Yorum Ekle</h3>
-                <asp:TextBox ID="txtComment" runat="server" TextMode="MultiLine" placeholder="Yorumunuzu yazın" Rows="4" Columns="30" required="required"></asp:TextBox>
-                <asp:RequiredFieldValidator ID="rfvComment" runat="server" ControlToValidate="txtComment" ErrorMessage="Yorum yazılmalıdır." ValidationGroup="AddComment" Display="Dynamic" ForeColor="Red" />
-                <div style="margin-bottom: 20px;">
-                    <asp:Button ID="btnAddComment" runat="server" Text="Gönder" OnClick="btnAddComment_Click" ValidationGroup="AddComment" />
-                </div>
-            </div>
+            <hr />
+
+            <!-- Yorumlar Listesi -->
+            <h3>Yorumlar</h3>
+            <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand">
+                <ItemTemplate>
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
+                        <strong><%# Eval("email") %> (<%# Eval("City") %>):</strong>
+                        <p><%# Eval("CommentText") %></p>
+                        <span style="font-size: small; color: gray;"><%# Eval("CreatedAt") %></span>
+
+                        <!-- Düzenleme Butonu (Kendi Mesajı veya Admin için Görünür) -->
+                        <asp:Button ID="btnEdit" runat="server" Text="Düzenle"
+                            CommandName="EditComment" CommandArgument='<%# Eval("id") %>'
+                            Visible='<%# Eval("email").ToString() == Session["User"].ToString() || IsAdmin(Session["User"].ToString()) %>' />
+                        <!-- DeActive Butonu (Kendi Mesajı veya Admin için Görünür) -->
+                        <asp:Button ID="btnDeActive" runat="server" Text="Sil"
+                            CommandName="DeActiveComment" CommandArgument='<%# Eval("id") %>'
+                            Visible='<%# Eval("email").ToString() == Session["User"].ToString() || IsAdmin(Session["User"].ToString()) %>' />
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+
+            <asp:Panel ID="pnlEditComment" runat="server" Visible="false">
+                <h3>Yorumu Düzenle</h3>
+                <asp:TextBox ID="txtEditComment" runat="server" TextMode="MultiLine" Rows="4" Width="100%"></asp:TextBox>
+                <asp:HiddenField ID="hfCommentId" runat="server" />
+                <asp:Button ID="btnSaveComment" runat="server" Text="Kaydet" OnClick="btnSaveComment_Click" />
+                <asp:Button ID="btnCancelEdit" runat="server" Text="İptal" OnClick="btnCancelEdit_Click" />
+            </asp:Panel>
+
+
+
+
         </div>
     </form>
 
@@ -143,8 +151,9 @@
 
     <footer id="footer" class="footer dark-background">
         <div class="container">
-            <h3 class="sitename">Selecao</h3>
-            <p>Et aut eum quis fuga eos sunt ipsa nihil. Labore corporis magni eligendi fuga maxime saepe commodi placeat.</p>
+            <h3 class="sitename">Zeus</h3>
+            <p>Fakat birisi kurtaracak gelip bi' gün Atam gibi</p>
+            <p>-Hidra</p>
             <div class="social-links d-flex justify-content-center">
                 <a href=""><i class="bi bi-twitter-x"></i></a>
                 <a href=""><i class="bi bi-facebook"></i></a>

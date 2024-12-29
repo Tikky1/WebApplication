@@ -14,11 +14,11 @@ using System.Data;
 
 namespace WebApplication.Template
 {
-    public partial class Main : System.Web.UI.Page
+    public partial class AdminPanel : System.Web.UI.Page
     {
         protected async void Page_Load(object sender, EventArgs e)
         {
-            
+
             // Kullanıcı login olmadıysa Login sayfasına yönlendirme
             if (Session["User"] == null)
             {
@@ -250,7 +250,7 @@ namespace WebApplication.Template
             {
                 // Düzenlenecek yorumun ID'sini al
                 int commentId = Convert.ToInt32(e.CommandArgument);
-
+                lblMessage.Text = commentId.ToString();
                 // Yorum bilgilerini getir
                 LoadCommentForEditing(commentId);
             }
@@ -261,8 +261,9 @@ namespace WebApplication.Template
 
                 // Yorum bilgilerini getir
                 DeactivateComment(commentId);
-                
+
             }
+
         }
         private void LoadCommentForEditing(int commentId)
         {
@@ -273,20 +274,20 @@ namespace WebApplication.Template
             {
                 using (var connection = new MySqlConnection(connectionString))
                 {
-                    string query = "SELECT email, CommentText FROM Comments WHERE id = @ID";
+                    string query = "SELECT CommentText FROM Comments WHERE id = @id";
                     MySqlCommand command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@ID", commentId);
+                    command.Parameters.AddWithValue("@id", commentId);
 
                     connection.Open();
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            string commentOwnerEmail = reader["email"].ToString();
+
                             string commentText = reader["CommentText"].ToString();
 
                             // Eğer yorum sahibi değilse ve admin değilse işlem yapılmaz
-                            if (commentOwnerEmail != currentUserEmail && !IsAdmin(currentUserEmail))
+                            if (!IsAdmin(currentUserEmail))
                             {
                                 lblMessage.Text = "Bu yorumu düzenleme yetkiniz yok.";
                                 return;
@@ -327,25 +328,20 @@ namespace WebApplication.Template
             {
                 using (var connection = new MySqlConnection(connectionString))
                 {
-                    string query = "UPDATE Comments SET CommentText = @CommentText WHERE id = @ID AND email = @UserEmail";
+                    string query = "UPDATE Comments SET CommentText = @CommentText WHERE id = @id ";
                     MySqlCommand command = new MySqlCommand(query, connection);
                     command.Parameters.AddWithValue("@CommentText", updatedComment);
-                    command.Parameters.AddWithValue("@ID", commentId);
-                    command.Parameters.AddWithValue("@UserEmail", Session["User"]);
+                    command.Parameters.AddWithValue("@id", commentId);
+
 
                     connection.Open();
                     int rowsAffected = command.ExecuteNonQuery();
 
-                    if (rowsAffected > 0)
-                    {
-                        lblMessage.Text = "Yorum başarıyla güncellendi.";
-                        pnlEditComment.Visible = false;
-                        LoadComments(); // Güncel yorumları yeniden yükle
-                    }
-                    else
-                    {
-                        lblMessage.Text = "Yorum güncellenemedi. Yetkiniz olmayabilir.";
-                    }
+
+                    lblMessage.Text = "Yorum başarıyla güncellendi.";
+                    pnlEditComment.Visible = false;
+                    LoadComments(); // Güncel yorumları yeniden yükle
+
                 }
             }
             catch (Exception ex)
@@ -418,30 +414,7 @@ namespace WebApplication.Template
         }
         public bool IsAdmin(string email)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
-            try
-            {
-                using (var connection = new MySqlConnection(connectionString))
-                {
-                    string query = "SELECT isAdmin FROM user WHERE email = @Email";
-                    MySqlCommand command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@Email", email);
-
-                    connection.Open();
-                    object result = command.ExecuteScalar();
-
-                    if (result != null)
-                    {
-                        return Convert.ToBoolean(result);
-                    }
-                }
-            }
-            catch (Exception)
-            {
-                // Hata durumunda admin olmayan bir kullanıcı varsayılır
-            }
-
-            return false;
+            return true;
         }
 
 

@@ -13,11 +13,8 @@ namespace WebApplication.Template
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            // Eğer kullanıcı zaten giriş yaptıysa, doğrudan yönlendir
-            if (Session["User"] != null)
-            {
-                Response.Redirect("Main.aspx");
-            }
+            
+            
         }
 
         // MySQL bağlantı dizesi
@@ -26,7 +23,7 @@ namespace WebApplication.Template
         protected void btnLogin_Click(object sender, EventArgs e)
         {
             string email = txtEmail.Text.Trim();
-            string password = txtPassword.Text.Trim();
+            string password = HashPassword(txtPassword.Text.Trim());
 
             if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
             {
@@ -35,9 +32,17 @@ namespace WebApplication.Template
                 {
                     // Kullanıcı giriş yaptıktan sonra Session oluştur
                     Session["User"] = email;
+                    
 
                     lblMessage.Text = "Login successful! Redirecting...";
                     Response.Redirect("Main.aspx");
+                }
+                else if (loginResult == "adminIsHere")
+                {
+                    Session["User"] = email;
+
+                    lblMessage.Text = "Login successful! Redirecting...";
+                    Response.Redirect("AdminPanel.aspx");
                 }
                 else
                 {
@@ -48,6 +53,25 @@ namespace WebApplication.Template
             {
                 lblMessage.Text = "Please enter both User ID and Password.";
             }
+        }
+        private string HashPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+
+                // Hash'i bir string olarak döndür
+                StringBuilder builder = new StringBuilder();
+                foreach (byte b in bytes)
+                {
+                    builder.Append(b.ToString("x2")); // Hexadecimal formatta döndür
+                }
+                return builder.ToString();
+            }
+        }
+        protected void btnPasswordChange_Click(object sender, EventArgs e)
+        {
+            Response.Redirect("changePasswordPage.aspx");
         }
 
         protected void btnSignUp_Click(object sender, EventArgs e)
@@ -62,13 +86,14 @@ namespace WebApplication.Template
                 // MySQL bağlantısı oluştur
                 using (var connection = new MySqlConnection(connectionString))
                 {
-                    string query = "SELECT email, password, isActive FROM user WHERE email = @email AND password = @password";
+                    string query = "SELECT email, password, isActive, isAdmin FROM user WHERE email = @email AND password = @password";
                     MySqlCommand command = new MySqlCommand(query, connection);
 
                     // Parametreleri ekle
                     command.Parameters.AddWithValue("@email", email);
                     command.Parameters.AddWithValue("@password", password);
-
+                    
+                    
                     // Bağlantıyı aç ve sorguyu çalıştır
                     connection.Open();
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -81,8 +106,16 @@ namespace WebApplication.Template
                             {
                                 return "Your account is inactive. Please contact admin.";
                             }
-
-                            return "success";
+                            bool isAdmin = reader.GetBoolean("isAdmin");
+                            if (!isAdmin)
+                            {
+                                return "success";
+                            }
+                            else
+                            {
+                                return "adminIsHere";
+                            }
+                            
                         }
                         else
                         {

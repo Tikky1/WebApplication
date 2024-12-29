@@ -160,6 +160,7 @@
     <Content Include="Scripts\jquery-3.7.1.min.js" />
     <Content Include="Scripts\jquery-3.7.1.slim.js" />
     <Content Include="Scripts\jquery-3.7.1.slim.min.js" />
+    <Content Include="Template\AdminPanel.aspx" />
     <Content Include="Template\assets\css\main.css" />
     <Content Include="Template\assets\img\apple-touch-icon.png" />
     <Content Include="Template\assets\img\blog\blog-1.jpg" />
@@ -254,21 +255,45 @@
     <Content Include="Template\assets\vendor\php-email-form\validate.js" />
     <Content Include="Template\assets\vendor\swiper\swiper-bundle.min.css" />
     <Content Include="Template\assets\vendor\swiper\swiper-bundle.min.js" />
+    <Content Include="Template\changePasswordPage.aspx" />
     <Content Include="Template\forms\contact.php" />
     <Content Include="Template\forms\Readme.txt" />
     <Content Include="Template\LoginPage.aspx" />
+    <Content Include="Template\LogoutPage.aspx" />
     <Content Include="Template\Main.aspx" />
     <Content Include="Template\SignUp.aspx" />
+    <Content Include="Template\UserPage.aspx" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Template\AdminPanel.aspx.cs">
+      <DependentUpon>AdminPanel.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Template\AdminPanel.aspx.designer.cs">
+      <DependentUpon>AdminPanel.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Template\changePasswordPage.aspx.cs">
+      <DependentUpon>changePasswordPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Template\changePasswordPage.aspx.designer.cs">
+      <DependentUpon>changePasswordPage.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Template\LoginPage.aspx.cs">
       <DependentUpon>LoginPage.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
     <Compile Include="Template\LoginPage.aspx.designer.cs">
       <DependentUpon>LoginPage.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Template\LogoutPage.aspx.cs">
+      <DependentUpon>LogoutPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Template\LogoutPage.aspx.designer.cs">
+      <DependentUpon>LogoutPage.aspx</DependentUpon>
     </Compile>
     <Compile Include="Template\Main.aspx.cs">
       <DependentUpon>Main.aspx</DependentUpon>
@@ -283,6 +308,13 @@
     </Compile>
     <Compile Include="Template\SignUp.aspx.designer.cs">
       <DependentUpon>SignUp.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Template\UserPage.aspx.cs">
+      <DependentUpon>UserPage.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Template\UserPage.aspx.designer.cs">
+      <DependentUpon>UserPage.aspx</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>

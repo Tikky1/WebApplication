@@ -1,12 +1,15 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="SignUp.aspx.cs" Inherits="WebApplication.Template.SignUp" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminPanel.aspx.cs" Inherits="WebApplication.Template.AdminPanel" Async="true" %>
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+
+
+
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>SignUp Page</title>
+    <title>AdminPanelForAdmins</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -37,6 +40,10 @@
   * Author: BootstrapMade.com
   * License: https://bootstrapmade.com/license/
   ======================================================== -->
+
+
+    <script src="Scripts/jquery-3.6.0.min.js"></script>
+
 </head>
 
 <body class="Main-page">
@@ -44,14 +51,20 @@
     <header id="header" class="header d-flex align-items-center fixed-top">
         <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
-            <a href="Main.aspx" class="logo d-flex align-items-center">
+            <a href="AdminPanel.aspx" class="logo d-flex align-items-center">
                 <!-- Uncomment the line below if you also wish to use an image logo -->
                 <!-- <img src="assets/img/logo.png" alt=""> -->
-                <h1 class="sitename">Zeus</h1>
+                <h1 class="sitename">ZeusAdmin</h1>
             </a>
 
             <nav id="navmenu" class="navmenu">
+                <ul>
+                    <li><a href="UserPage.aspx">Users</a></li>
+                    <li><a href="LogoutPage.aspx">Exit</a></li>
+                </ul>
+
                 
+
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
@@ -71,74 +84,67 @@
     </main>
 
 
+    <!-- Content -->
 
-
-    <form id="form1" runat="server">
-        <div style="margin: 100px auto; width: 300px; text-align: center;">
-            <asp:Label ID="lblMessage" runat="server" ForeColor="Red"></asp:Label>
-
-
-
-
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtName" runat="server" Placeholder="Name" Width="100%" />
+    <form id="Form1" runat="server" class="main-panel">
+        <!-- Hava Durumu Paneli -->
+        <div class="weather-panel" style="margin: 100px auto; width: 300px; text-align: center;">
+            <h2>Hava Durumu</h2>
+            <div class="search-bar">
+                <asp:TextBox ID="txtCity" runat="server" placeholder="Şehir adı girin"></asp:TextBox>
+                <asp:RequiredFieldValidator ID="rfvCity" runat="server" ControlToValidate="txtCity" ErrorMessage="Şehir adı gereklidir." ValidationGroup="WeatherSearch" Display="Dynamic" ForeColor="Red" />
+                <asp:Button ID="btnSearch" runat="server" Text="Ara" OnClick="btnSearch_Click" ValidationGroup="WeatherSearch" />
             </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtSurName" runat="server" Placeholder="Surname" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px; position: relative;">
-                <asp:TextBox ID="txtPassword" runat="server" TextMode="Password" Placeholder="Password" Width="100%" />
-                <!-- Şifre Göster/Gizle Butonu -->
-                <button type="button" style="position: absolute; right: -50px; top: 0px;" onclick="togglePasswordVisibility()">👁</button>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtEmail" runat="server" Placeholder="Email" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtphoneNumber" runat="server" Placeholder="Phone" Width="100%" />
-            </div>
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtCity" runat="server" Placeholder="City" Width="100%" />
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtBirth" runat="server" TextMode="Date" Placeholder="Date" Width="100%" />
-            </div>
-
-            <script>
-                // Sayfa yüklendiğinde tarih aralığını ayarla
-                document.addEventListener('DOMContentLoaded', function () {
-                    const dateField = document.getElementById('<%= txtBirth.ClientID %>');
-                    const today = new Date();
-
-                    // Min tarih (örn: 1900-01-01)
-                    const minDate = '1900-01-01';
-
-                    // Max tarih (örn: bugünkü tarih)
-                    const maxDate = today.toISOString().split('T')[0];
-
-                    // Min ve Max değerleri ayarla
-                    dateField.setAttribute('min', minDate);
-                    dateField.setAttribute('max', maxDate);
-                });
-            </script>
-            <div style="margin-bottom: 20px;">
-                <asp:Button ID="btnSignUp" runat="server" Text="SignUp" OnClick="btnSignUp_Click" />
-                <asp:Button ID="btnBack" runat="server" Text="Back" OnClick="btnBack_Click" />
-                
+            <div class="weather-info">
+                <asp:Label ID="lblWeatherInfo" runat="server" Text=""></asp:Label>
             </div>
         </div>
+
+        <!-- Yorum Paneli -->
+        <div style="margin: 20px;">
+            <!-- Kullanıcı Yorumu Girişi -->
+            <h3>Yorum Ekle</h3>
+            <asp:TextBox ID="txtComment" runat="server" TextMode="MultiLine" Rows="4" Width="100%" Placeholder="Yorumunuzu buraya yazın"></asp:TextBox>
+            <asp:Button ID="btnAddComment" runat="server" Text="Yorumu Kaydet" OnClick="btnAddComment_Click" />
+            <asp:Label ID="lblMessage" runat="server" ForeColor="Green"></asp:Label>
+
+            <hr />
+
+            <!-- Yorumlar Listesi -->
+            <h3>Yorumlar</h3>
+            <asp:Repeater ID="rptComments" runat="server" OnItemCommand="rptComments_ItemCommand">
+                <ItemTemplate>
+                    <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #ccc;">
+                        <strong><%# Eval("email") %> (<%# Eval("City") %>):</strong>
+                        <p><%# Eval("CommentText") %></p>
+                        <span style="font-size: small; color: gray;"><%# Eval("CreatedAt") %></span>
+
+                        <!-- Düzenleme Butonu (Kendi Mesajı veya Admin için Görünür) -->
+                        <asp:Button ID="btnEdit" runat="server" Text="Düzenle"
+                            CommandName="EditComment" CommandArgument='<%# Eval("id") %>'
+                            Visible='<%# Eval("email").ToString() == Session["User"].ToString() || IsAdmin(Session["User"].ToString()) %>' />
+                        <!-- DeActive Butonu (Kendi Mesajı veya Admin için Görünür) -->
+                        <asp:Button ID="btnDeActive" runat="server" Text="Sil"
+                            CommandName="DeActiveComment" CommandArgument='<%# Eval("id") %>'
+                            Visible='<%# Eval("email").ToString() == Session["User"].ToString() || IsAdmin(Session["User"].ToString()) %>' />
+                    </div>
+                </ItemTemplate>
+            </asp:Repeater>
+
+            <asp:Panel ID="pnlEditComment" runat="server" Visible="false">
+                <h3>Yorumu Düzenle</h3>
+                <asp:TextBox ID="txtEditComment" runat="server" TextMode="MultiLine" Rows="4" Width="100%"></asp:TextBox>
+                <asp:HiddenField ID="hfCommentId" runat="server" />
+                <asp:Button ID="btnSaveComment" runat="server" Text="Kaydet" OnClick="btnSaveComment_Click" />
+                <asp:Button ID="btnCancelEdit" runat="server" Text="İptal" OnClick="btnCancelEdit_Click" />
+            </asp:Panel>
+
+
+
+
+        </div>
     </form>
-    <script>
-        function togglePasswordVisibility() {
-            const passwordField = document.getElementById('<%= txtPassword.ClientID %>');
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text'; // Şifreyi yazı haline getir
-            } else {
-                passwordField.type = 'password'; // Şifreyi gizle
-            }
-        }
-    </script>
+
 
 
 
@@ -149,8 +155,9 @@
 
     <footer id="footer" class="footer dark-background">
         <div class="container">
-            <h3 class="sitename">Selecao</h3>
-            <p>Et aut eum quis fuga eos sunt ipsa nihil. Labore corporis magni eligendi fuga maxime saepe commodi placeat.</p>
+            <h3 class="sitename">Zeus</h3>
+            <p>Fakat birisi kurtaracak gelip bi' gün Atam gibi</p>
+            <p>-Hidra</p>
             <div class="social-links d-flex justify-content-center">
                 <a href=""><i class="bi bi-twitter-x"></i></a>
                 <a href=""><i class="bi bi-facebook"></i></a>
