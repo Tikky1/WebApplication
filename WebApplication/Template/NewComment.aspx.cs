@@ -9,7 +9,7 @@ using System.Web.UI.WebControls;
 
 namespace WebApplication.Template
 {
-    public partial class UserPage : System.Web.UI.Page
+    public partial class NewComment : System.Web.UI.Page
     {
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -31,8 +31,8 @@ namespace WebApplication.Template
         {
             return true;
         }
-        
-        
+
+
         private void LoadUsers()
         {
             
@@ -40,7 +40,7 @@ namespace WebApplication.Template
             {
                 using (var connection = (Connection.GetConnection()))
                 {
-                    string query = "SELECT * FROM User ORDER BY Id DESC";
+                    string query = "SELECT * FROM Comments WHERE isApproved = 0 ORDER BY Id DESC";
 
                     MySqlCommand command = new MySqlCommand(query, connection);
                     connection.Open();
@@ -75,30 +75,32 @@ namespace WebApplication.Template
             int userId = Convert.ToInt32(gvUsers.DataKeys[e.RowIndex].Value);
 
             GridViewRow row = gvUsers.Rows[e.RowIndex];
-            string name = (row.Cells[1].Controls[0] as TextBox).Text;
-            string surname = (row.Cells[2].Controls[0] as TextBox).Text;
-            string email = (row.Cells[3].Controls[0] as TextBox).Text;
-            bool isActive = (row.Cells[4].Controls[0] as CheckBox).Checked;
-            bool isAdmin = (row.Cells[5].Controls[0] as CheckBox).Checked;
-            string phoneNumber = (row.Cells[6].Controls[0] as TextBox).Text;
-            string city = (row.Cells[7].Controls[0] as TextBox).Text;
             
+            string email = (row.Cells[1].Controls[0] as TextBox).Text;
+            string city = (row.Cells[2].Controls[0] as TextBox).Text;
+            bool isActive = (row.Cells[3].Controls[0] as CheckBox).Checked;
+            bool isApproved = (row.Cells[4].Controls[0] as CheckBox).Checked;
+            string CommentText = (row.Cells[5].Controls[0] as TextBox).Text;
+
+
+
 
             try
             {
                 using (var connection = (Connection.GetConnection()))
                 {
-                    string query = "UPDATE User SET name = @name, surname = @surname, email = @Email," +
-                        " isActive = @isActive, isAdmin = @isAdmin, phoneNumber = @phoneNumber, city = @city" +
+                    string query = "UPDATE Comments SET email = @Email," +
+                        "city = @city, isActive = @isActive, isApproved = @isApproved, CommentText = @CommentText" +
                         " WHERE Id = @Id";
                     MySqlCommand command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@name", name);
-                    command.Parameters.AddWithValue("@surname", surname);
+
                     command.Parameters.AddWithValue("@Email", email);
-                    command.Parameters.AddWithValue("@isActive", isActive);                   
-                    command.Parameters.AddWithValue("@isAdmin", isAdmin);
-                    command.Parameters.AddWithValue("@phoneNumber", phoneNumber);
                     command.Parameters.AddWithValue("@city", city);
+                    command.Parameters.AddWithValue("@isActive", isActive);
+                    command.Parameters.AddWithValue("@isApproved", isApproved);
+                    command.Parameters.AddWithValue("@CommentText", CommentText);
+
+
                     command.Parameters.AddWithValue("@Id", userId);
                     connection.Open();
                     command.ExecuteNonQuery();
@@ -113,7 +115,7 @@ namespace WebApplication.Template
                 lblMessage.Text = $"Güncelleme sırasında hata oluştu: {ex.Message}";
             }
         }
-        
+
 
 
 

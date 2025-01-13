@@ -18,12 +18,12 @@ namespace WebApplication.Template
         }
 
         // MySQL bağlantı dizesi
-        string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+        
 
         protected void btnLogin_Click(object sender, EventArgs e)
         {
             string email = txtEmail.Text.Trim();
-            string password = HashPassword(txtPassword.Text.Trim());
+            string password = Hash.HashPassword(txtPassword.Text.Trim());
 
             if (!string.IsNullOrEmpty(email) && !string.IsNullOrEmpty(password))
             {
@@ -54,21 +54,7 @@ namespace WebApplication.Template
                 lblMessage.Text = "Please enter both User ID and Password.";
             }
         }
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                // Hash'i bir string olarak döndür
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes)
-                {
-                    builder.Append(b.ToString("x2")); // Hexadecimal formatta döndür
-                }
-                return builder.ToString();
-            }
-        }
+        
         protected void btnPasswordChange_Click(object sender, EventArgs e)
         {
             Response.Redirect("changePasswordPage.aspx");
@@ -84,7 +70,7 @@ namespace WebApplication.Template
             try
             {
                 // MySQL bağlantısı oluştur
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = (Connection.GetConnection()))
                 {
                     string query = "SELECT email, password, isActive, isAdmin FROM user WHERE email = @email AND password = @password";
                     MySqlCommand command = new MySqlCommand(query, connection);

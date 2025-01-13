@@ -7,7 +7,7 @@ namespace WebApplication.Template
 {
     public partial class SignUp : System.Web.UI.Page
     {
-        string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+        
 
         protected void Page_Load(object sender, EventArgs e)
         {
@@ -55,7 +55,7 @@ namespace WebApplication.Template
             }
 
             // Şifreyi hashle
-            string hashedPassword = HashPassword(password);
+            string hashedPassword = Hash.HashPassword(password);
 
             var result = RegisterUser(name, surname, hashedPassword, email, phone, birthDate, city);
             if (result == "success")
@@ -74,7 +74,7 @@ namespace WebApplication.Template
         {
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = (Connection.GetConnection()))
                 {
                     string query = "INSERT INTO user (name, surname, password, email, phoneNumber, birth, city) VALUES (@name, @surname, @password, @email, @phone, @birth, @city)";
                     MySqlCommand command = new MySqlCommand(query, connection);
@@ -109,20 +109,6 @@ namespace WebApplication.Template
         }
 
         // Şifreyi hashlemek için kullanılan fonksiyon
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                // Hash'i bir string olarak döndür
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes)
-                {
-                    builder.Append(b.ToString("x2")); // Hexadecimal formatta döndür
-                }
-                return builder.ToString();
-            }
-        }
+        
     }
 }

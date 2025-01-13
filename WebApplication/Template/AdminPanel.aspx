@@ -1,5 +1,4 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="AdminPanel.aspx.cs" Inherits="WebApplication.Template.AdminPanel" Async="true" %>
-
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -9,7 +8,7 @@
 
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>AdminPanelForAdmins</title>
+    <title>Zeus</title>
     <meta name="description" content="">
     <meta name="keywords" content="">
 
@@ -51,20 +50,18 @@
     <header id="header" class="header d-flex align-items-center fixed-top">
         <div class="container-fluid container-xl position-relative d-flex align-items-center justify-content-between">
 
-            <a href="AdminPanel.aspx" class="logo d-flex align-items-center">
+            <a href="Main.aspx" class="logo d-flex align-items-center">
                 <!-- Uncomment the line below if you also wish to use an image logo -->
                 <!-- <img src="assets/img/logo.png" alt=""> -->
-                <h1 class="sitename">ZeusAdmin</h1>
+                <h1 class="sitename">Zeus</h1>
             </a>
 
             <nav id="navmenu" class="navmenu">
-                <ul>
+                <ul
+                    <li><a href="NewComment.aspx">Comments</a></li>
                     <li><a href="UserPage.aspx">Users</a></li>
                     <li><a href="LogoutPage.aspx">Exit</a></li>
                 </ul>
-
-                
-
                 <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
             </nav>
 
@@ -87,11 +84,50 @@
     <!-- Content -->
 
     <form id="Form1" runat="server" class="main-panel">
+
+        <div style="display: flex; justify-content: center; align-items: center; height: 40vh;">
+            <div id="openweathermap-widget-21"></div>
+        </div>
+
+
+        <script src='//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js'></script>
+        <script>window.myWidgetParam ? window.myWidgetParam : window.myWidgetParam = []; window.myWidgetParam.push({ id: 21, cityid: '323786', appid: '451ea1379d2c469747b294bf43a5462c', units: 'metric', containerid: 'openweathermap-widget-21', }); (function () { var script = document.createElement('script'); script.async = true; script.charset = "utf-8"; script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js"; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(script, s); })();</script>
+        <script>
+            function updateWeatherWidget(cityId) {
+                if (!cityId) {
+                    console.error("City ID boş!");
+                    return;
+                }
+
+                window.myWidgetParam = [];
+                window.myWidgetParam.push({
+                    id: 21,
+                    cityid: cityId, // Dinamik olarak gelen City ID
+                    appid: '451ea1379d2c469747b294bf43a5462c',
+                    units: 'metric',
+                    containerid: 'openweathermap-widget-21'
+                });
+
+                // Mevcut widget'ı temizle ve yeniden oluştur
+                const container = document.getElementById('openweathermap-widget-21');
+                container.innerHTML = ''; // Eski içeriği temizle
+
+                const script = document.createElement('script');
+                script.async = true;
+                script.charset = "utf-8";
+                script.src = "//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js";
+                document.body.appendChild(script);
+            }
+        </script>
+
+
+
         <!-- Hava Durumu Paneli -->
         <div class="weather-panel" style="margin: 100px auto; width: 300px; text-align: center;">
             <h2>Hava Durumu</h2>
             <div class="search-bar">
-                <asp:TextBox ID="txtCity" runat="server" placeholder="Şehir adı girin"></asp:TextBox>
+                <asp:TextBox ID="txtCity" runat="server" placeholder="Şehir adı girin" OnTextChanged="txtInput_TextChanged" AutoPostBack="True"></asp:TextBox>
+                <asp:DropDownList ID="ddlCities" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlCities_SelectedIndexChanged"></asp:DropDownList>
                 <asp:RequiredFieldValidator ID="rfvCity" runat="server" ControlToValidate="txtCity" ErrorMessage="Şehir adı gereklidir." ValidationGroup="WeatherSearch" Display="Dynamic" ForeColor="Red" />
                 <asp:Button ID="btnSearch" runat="server" Text="Ara" OnClick="btnSearch_Click" ValidationGroup="WeatherSearch" />
             </div>

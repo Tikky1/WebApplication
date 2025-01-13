@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="UserPage.aspx.cs" Inherits="WebApplication.Template.UserPage" Async="true" %>
+﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="NewComment.aspx.cs" Inherits="WebApplication.Template.NewComment" Async="true" %>
 
 <!DOCTYPE html>
 
@@ -96,13 +96,13 @@
                 DataKeyNames="Id">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" ReadOnly="True" />
-                    <asp:BoundField DataField="name" HeaderText="Name" />
-                    <asp:BoundField DataField="surname" HeaderText="Surname" />
+                    
                     <asp:BoundField DataField="email" HeaderText="Email" />
-                    <asp:CheckBoxField DataField="isActive" HeaderText="Active Status" />
-                    <asp:CheckBoxField DataField="isAdmin" HeaderText="Admin Status" />
-                    <asp:BoundField DataField="phoneNumber" HeaderText="Phone Number" />
                     <asp:BoundField DataField="city" HeaderText="City" />
+                    <asp:CheckBoxField DataField="isActive" HeaderText="Active Status" />
+                    <asp:CheckBoxField DataField="isApproved" HeaderText="Approved Status" />
+                    <asp:BoundField DataField="CommentText" HeaderText="Comment" />
+                    
                     <asp:CommandField ShowEditButton="True" />
                 </Columns>
             </asp:GridView>

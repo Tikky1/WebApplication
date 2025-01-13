@@ -57,12 +57,12 @@ namespace WebApplication.Template
 
         private bool VerifyCurrentPassword(string email, string currentPassword)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
-            string hashedPassword = HashPassword(currentPassword);
+            
+            string hashedPassword = Hash.HashPassword(currentPassword);
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = (Connection.GetConnection()))
                 {
                     string query = "SELECT COUNT(*) FROM User WHERE email = @Email AND password = @Password";
                     MySqlCommand command = new MySqlCommand(query, connection);
@@ -83,12 +83,12 @@ namespace WebApplication.Template
 
         private bool UpdatePassword(string email, string newPassword)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
-            string hashedPassword = HashPassword(newPassword);
+            
+            string hashedPassword = Hash.HashPassword(newPassword);
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = (Connection.GetConnection()))
                 {
                     string query = "UPDATE User SET password = @NewPassword WHERE email = @Email";
                     MySqlCommand command = new MySqlCommand(query, connection);
@@ -111,18 +111,6 @@ namespace WebApplication.Template
             Response.Redirect("LoginPage.aspx");
         }
 
-        private string HashPassword(string password)
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                byte[] bytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                StringBuilder builder = new StringBuilder();
-                foreach (byte b in bytes)
-                {
-                    builder.Append(b.ToString("x2"));
-                }
-                return builder.ToString();
-            }
-        }
+        
     }
 }

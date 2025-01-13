@@ -261,6 +261,7 @@
     <Content Include="Template\LoginPage.aspx" />
     <Content Include="Template\LogoutPage.aspx" />
     <Content Include="Template\Main.aspx" />
+    <Content Include="Template\NewComment.aspx" />
     <Content Include="Template\SignUp.aspx" />
     <Content Include="Template\UserPage.aspx" />
     <Content Include="Web.config" />
@@ -303,6 +304,13 @@
     </Compile>
     <Compile Include="Template\Main.aspx.designer.cs">
       <DependentUpon>Main.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Template\NewComment.aspx.cs">
+      <DependentUpon>NewComment.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Template\NewComment.aspx.designer.cs">
+      <DependentUpon>NewComment.aspx</DependentUpon>
     </Compile>
     <Compile Include="Template\SignUp.aspx.cs">
       <DependentUpon>SignUp.aspx</DependentUpon>

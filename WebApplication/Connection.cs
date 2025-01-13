@@ -12,7 +12,7 @@ namespace WebApplication
     public static class Connection
     {
         // Bağlantı dizesi (Connection String)
-        private static readonly string connectionString = "Server=localhost;Database=mydatabase;User=root;Password=12345;";
+        private static readonly string connectionString = "Server=localhost;Database=proje;User=root;Password=12345;";
 
         // MySQL Bağlantısını döndüren metot
         public static MySqlConnection GetConnection()
@@ -35,14 +35,14 @@ namespace WebApplication
             return apiUrl;
         }
 
-        public static ArrayList GetCity(string city)
+        public static HashSet<string> GetCity(string city)
         {
-
-            ArrayList lines = new ArrayList(File.ReadAllLines("C:\\Users\\efeka\\source\\repos\\WebApplication\\WebApplication\\city_names.txt"););
-            foreach (string line in lines)
+            string[] citi = File.ReadAllLines("C:\\Users\\efeka\\source\\repos\\WebApplication\\WebApplication\\city_names.txt");
+            HashSet<string> lines = new HashSet<string>();
+            foreach (string line in citi)
             {
-                if (!line.ToLower().StartsWith(city.ToLower())){
-                    lines.Remove(line);
+                if (line.ToLower().StartsWith(city.ToLower())){
+                    lines.Add(line);
                     
                 }
             }

@@ -11,6 +11,7 @@ using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Data;
+using System.Collections;
 
 namespace WebApplication.Template
 {
@@ -18,8 +19,12 @@ namespace WebApplication.Template
     {
         protected async void Page_Load(object sender, EventArgs e)
         {
-
             // Kullanıcı login olmadıysa Login sayfasına yönlendirme
+            if (Session["User"] == null)
+            {
+                Response.Redirect("LoginPage.aspx", false);
+                return;
+            }
             if (Session["User"] == null)
             {
                 Response.Redirect("LoginPage.aspx", false);
@@ -28,11 +33,68 @@ namespace WebApplication.Template
 
             if (!IsPostBack)
             {
-
-                LoadComments();
-                // Session'dan email bilgisini al
+                // Giriş yapan kullanıcının e-postasını al
                 string userEmail = Session["User"] as string;
 
+                // Kullanıcının şehir bilgisi veritabanından alınır
+                string userCity = GetCityFromDatabase(userEmail);
+                if (string.IsNullOrEmpty(userCity))
+                {
+                    userCity = "Istanbul"; // Varsayılan şehir
+                }
+
+                // Şehir ID'si alınıyor
+                string cityId = await GetCityIdFromAPI(userCity);
+                if (!string.IsNullOrEmpty(cityId))
+                {
+                    // Widget için JavaScript'i çalıştır
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "UpdateWidget", $"updateWeatherWidget('{cityId}');", true);
+                }
+            }
+
+
+
+            if (!IsPostBack)
+            {
+                // Giriş yapan kullanıcının e-posta adresini al
+                string userEmail = Session["User"] as string;
+
+                // Kullanıcının şehir bilgisi
+                string userCity = GetCityFromDatabase(userEmail);
+                if (string.IsNullOrEmpty(userCity))
+                {
+                    userCity = "Istanbul"; // Varsayılan şehir
+                }
+
+
+
+                // Şehre göre yorumları yükle
+                txtCity.Text = userCity; // Varsayılan şehri TextBox'a yaz
+                LoadComments();
+            }
+
+
+            if (IsPostBack)
+            {
+                // Öğe sayısını kontrol edin
+                if (ddlCities.Items.Count == 1)
+                {
+
+                    txtCity.Text = ddlCities.Items[0].ToString();
+                }
+
+
+                LoadComments();
+            }
+
+
+            if (!IsPostBack)
+            {
+
+
+                // Session'dan email bilgisini al
+
+                string userEmail = Session["user"] as string;
 
                 // Kullanıcının şehir bilgisini al
                 string city = GetCityFromDatabase(userEmail);
@@ -41,15 +103,14 @@ namespace WebApplication.Template
                     city = "Istanbul"; // Varsayılan şehir
                 }
 
-                string apiKey = "451ea1379d2c469747b294bf43a5462c"; // OpenWeather API anahtarınızı buraya ekleyin
-                string apiUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apiKey}&units=metric&lang=tr";
+
                 if (!string.IsNullOrEmpty(city))
                 {
                     try
                     {
                         using (HttpClient client = new HttpClient())
                         {
-                            HttpResponseMessage response = await client.GetAsync(apiUrl);
+                            HttpResponseMessage response = await client.GetAsync(Connection.ApiConnection(city));
                             response.EnsureSuccessStatusCode();
                             string responseBody = await response.Content.ReadAsStringAsync();
 
@@ -76,17 +137,69 @@ namespace WebApplication.Template
 
         }
 
+        private async Task<string> GetCityIdFromAPI(string cityName)
+        {
+            string cityId = null;
+            string apiKey = "451ea1379d2c469747b294bf43a5462c";
+            string apiUrl = $"http://api.openweathermap.org/data/2.5/weather?q={cityName}&appid={apiKey}";
 
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+                    if (response.IsSuccessStatusCode)
+                    {
+                        string responseBody = await response.Content.ReadAsStringAsync();
+                        JObject weatherData = JObject.Parse(responseBody);
+                        cityId = weatherData["id"]?.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                lblMessage.Text = $"Şehir ID'si alınırken hata oluştu: {ex.Message}";
+            }
+
+            return cityId;
+        }
+
+
+        protected void txtInput_TextChanged(object sender, EventArgs e)
+        {
+            string cityName = txtCity.Text.Trim();
+
+
+
+
+
+            ddlCities.Items.Clear();
+            ddlCities.SelectedIndex = -1;
+            if (txtCity.Text != null)
+            {
+                foreach (string city in Connection.GetCity(txtCity.Text))
+                {
+                    ddlCities.Items.Add(new ListItem(city));
+                }
+            }
+
+
+
+        }
+        protected void ddlCities_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            txtCity.Text = ddlCities.SelectedItem.ToString();
+        }
 
 
         private string GetCityFromDatabase(string userEmail)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+
             string city = null;
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = Connection.GetConnection())
                 {
                     string query = "SELECT city FROM user WHERE email = @Email";
                     MySqlCommand command = new MySqlCommand(query, connection);
@@ -114,20 +227,23 @@ namespace WebApplication.Template
         protected async void btnSearch_Click(object sender, EventArgs e)
         {
             string city = txtCity.Text.Trim();
+
+            ddlCities.Items.Clear();
+
+
             if (string.IsNullOrEmpty(city))
             {
                 lblWeatherInfo.Text = "Lütfen bir şehir adı girin.";
                 return;
             }
 
-            string apiKey = "451ea1379d2c469747b294bf43a5462c"; // OpenWeather API anahtarınızı buraya ekleyin
-            string apiUrl = $"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={apiKey}&units=metric&lang=tr";
+
 
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+                    HttpResponseMessage response = await client.GetAsync(Connection.ApiConnection(city));
                     response.EnsureSuccessStatusCode();
                     string responseBody = await response.Content.ReadAsStringAsync();
 
@@ -145,12 +261,34 @@ namespace WebApplication.Template
             {
                 lblWeatherInfo.Text = $"Hata: {ex.Message}";
             }
+
+
+            if (!string.IsNullOrEmpty(city))
+            {
+                // Şehir ID'si alınıyor
+                string cityId = await GetCityIdFromAPI(city);
+                if (!string.IsNullOrEmpty(cityId))
+                {
+                    // Widget için JavaScript'i çalıştır
+                    ScriptManager.RegisterStartupScript(this, this.GetType(), "UpdateWidget", $"updateWeatherWidget('{cityId}');", true);
+                }
+                else
+                {
+                    lblMessage.Text = "Girilen şehir için ID bulunamadı.";
+                }
+            }
+            else
+            {
+                lblMessage.Text = "Lütfen bir şehir adı girin.";
+            }
+
+
         }
         protected void btnAddComment_Click(object sender, EventArgs e)
         {
             // Session'dan email bilgisini al
             string userEmail = Session["User"] as string;
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+
             string city = null;
             string commentText = txtComment.Text.Trim();
 
@@ -162,7 +300,7 @@ namespace WebApplication.Template
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = Connection.GetConnection())
                 {
                     // Kullanıcının şehir bilgisi için SELECT sorgusu
                     string selectQuery = "SELECT City FROM user WHERE email = @Email";
@@ -215,17 +353,20 @@ namespace WebApplication.Template
         }
         private void LoadComments()
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+            string City = txtCity.Text;
+
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = Connection.GetConnection())
                 {
                     string query = "SELECT id,email, City, CommentText, CreatedAt " +
                                    "FROM Comments " +
-                                   "WHERE isActive = 1 " +
+                                   "WHERE isActive = 1 and isApproved = 1 and City = @City " +
                                    "ORDER BY CreatedAt DESC";
 
                     MySqlCommand command = new MySqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@City", City);
+
                     connection.Open();
 
                     using (MySqlDataReader reader = command.ExecuteReader())
@@ -242,6 +383,7 @@ namespace WebApplication.Template
                 lblMessage.ForeColor = System.Drawing.Color.Red;
                 lblMessage.Text = $"Yorumlar yüklenirken hata oluştu: {ex.Message}";
             }
+
         }
 
         protected void rptComments_ItemCommand(object source, RepeaterCommandEventArgs e)
@@ -250,7 +392,7 @@ namespace WebApplication.Template
             {
                 // Düzenlenecek yorumun ID'sini al
                 int commentId = Convert.ToInt32(e.CommandArgument);
-                lblMessage.Text = commentId.ToString();
+
                 // Yorum bilgilerini getir
                 LoadCommentForEditing(commentId);
             }
@@ -263,31 +405,30 @@ namespace WebApplication.Template
                 DeactivateComment(commentId);
 
             }
-
         }
         private void LoadCommentForEditing(int commentId)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+
             string currentUserEmail = Session["User"] as string;
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = Connection.GetConnection())
                 {
-                    string query = "SELECT CommentText FROM Comments WHERE id = @id";
+                    string query = "SELECT email, CommentText FROM Comments WHERE id = @ID";
                     MySqlCommand command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@id", commentId);
+                    command.Parameters.AddWithValue("@ID", commentId);
 
                     connection.Open();
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-
+                            string commentOwnerEmail = reader["email"].ToString();
                             string commentText = reader["CommentText"].ToString();
 
                             // Eğer yorum sahibi değilse ve admin değilse işlem yapılmaz
-                            if (!IsAdmin(currentUserEmail))
+                            if (commentOwnerEmail != currentUserEmail && !IsAdmin(currentUserEmail))
                             {
                                 lblMessage.Text = "Bu yorumu düzenleme yetkiniz yok.";
                                 return;
@@ -314,7 +455,7 @@ namespace WebApplication.Template
 
         protected void btnSaveComment_Click(object sender, EventArgs e)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+
             int commentId = Convert.ToInt32(hfCommentId.Value);
             string updatedComment = txtEditComment.Text.Trim();
 
@@ -326,22 +467,27 @@ namespace WebApplication.Template
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = Connection.GetConnection())
                 {
-                    string query = "UPDATE Comments SET CommentText = @CommentText WHERE id = @id ";
+                    string query = "UPDATE Comments SET CommentText = @CommentText WHERE id = @ID AND email = @UserEmail";
                     MySqlCommand command = new MySqlCommand(query, connection);
                     command.Parameters.AddWithValue("@CommentText", updatedComment);
-                    command.Parameters.AddWithValue("@id", commentId);
-
+                    command.Parameters.AddWithValue("@ID", commentId);
+                    command.Parameters.AddWithValue("@UserEmail", Session["User"]);
 
                     connection.Open();
                     int rowsAffected = command.ExecuteNonQuery();
 
-
-                    lblMessage.Text = "Yorum başarıyla güncellendi.";
-                    pnlEditComment.Visible = false;
-                    LoadComments(); // Güncel yorumları yeniden yükle
-
+                    if (rowsAffected > 0)
+                    {
+                        lblMessage.Text = "Yorum başarıyla güncellendi.";
+                        pnlEditComment.Visible = false;
+                        LoadComments(); // Güncel yorumları yeniden yükle
+                    }
+                    else
+                    {
+                        lblMessage.Text = "Yorum güncellenemedi. Yetkiniz olmayabilir.";
+                    }
                 }
             }
             catch (Exception ex)
@@ -365,12 +511,12 @@ namespace WebApplication.Template
 
         private void DeactivateComment(int commentId)
         {
-            string connectionString = "Server=localhost;Port=3306;Database=proje;User=root;Password=12345;";
+
             string currentUserEmail = Session["User"] as string;
 
             try
             {
-                using (var connection = new MySqlConnection(connectionString))
+                using (var connection = Connection.GetConnection())
                 {
                     // Silme işlemi için önce yorumu kontrol et
                     string checkQuery = "SELECT email FROM Comments WHERE id = @ID AND isActive = TRUE";
@@ -397,8 +543,19 @@ namespace WebApplication.Template
                         updateCommand.Parameters.AddWithValue("@ID", commentId);
                         updateCommand.ExecuteNonQuery();
 
+
+
+
+
+
+
+
+
+
                         lblMessage.Text = "Yorum başarıyla silindi.";
+
                         LoadComments();
+
                     }
                     else
                     {
@@ -412,10 +569,36 @@ namespace WebApplication.Template
                 lblMessage.Text = $"Yorum silinirken hata oluştu: {ex.Message}";
             }
         }
+
         public bool IsAdmin(string email)
         {
-            return true;
+
+            try
+            {
+                using (var connection = Connection.GetConnection())
+                {
+                    string query = "SELECT isAdmin FROM user WHERE email = @Email";
+                    MySqlCommand command = new MySqlCommand(query, connection);
+                    command.Parameters.AddWithValue("@Email", email);
+
+                    connection.Open();
+                    object result = command.ExecuteScalar();
+
+                    if (result != null)
+                    {
+                        return Convert.ToBoolean(result);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Hata durumunda admin olmayan bir kullanıcı varsayılır
+            }
+
+            return false;
         }
+
+
 
 
 

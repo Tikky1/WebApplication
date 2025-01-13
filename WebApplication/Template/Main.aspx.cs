@@ -19,13 +19,12 @@ namespace WebApplication.Template
     {
         protected async void Page_Load(object sender, EventArgs e)
         {
-
             // Kullanıcı login olmadıysa Login sayfasına yönlendirme
-            //if (Session["User"] == null)
-            //{
-            //    Response.Redirect("LoginPage.aspx", false);
-            //    return;
-            //}
+            if (Session["User"] == null)
+            {
+                Response.Redirect("LoginPage.aspx", false);
+                return;
+            }
             if (Session["User"] == null)
             {
                 Response.Redirect("LoginPage.aspx", false);
@@ -75,7 +74,7 @@ namespace WebApplication.Template
             }
 
 
-            if (!IsPostBack)
+            if (IsPostBack)
             {
                 // Öğe sayısını kontrol edin
                 if (ddlCities.Items.Count == 1)
@@ -94,9 +93,6 @@ namespace WebApplication.Template
 
 
                 // Session'dan email bilgisini al
-
-
-
 
                 string userEmail = Session["user"] as string;
 
@@ -240,7 +236,6 @@ namespace WebApplication.Template
                 lblWeatherInfo.Text = "Lütfen bir şehir adı girin.";
                 return;
             }
-
 
 
 
@@ -393,73 +388,53 @@ namespace WebApplication.Template
 
         protected void rptComments_ItemCommand(object source, RepeaterCommandEventArgs e)
         {
-            // Geçerli bir yorum ID'si olup olmadığını kontrol edin
-            if (int.TryParse(e.CommandArgument.ToString(), out int commentId))
+            if (e.CommandName == "EditComment")
             {
-                if (e.CommandName == "EditComment")
-                {
-                    // Düzenleme işlemi
-                    LoadCommentForEditing(commentId);
-                }
-                else if (e.CommandName == "DeActiveComment")
-                {
-                    // Yorum pasif hale getirme işlemi
-                    DeactivateComment(commentId);
+                // Düzenlenecek yorumun ID'sini al
+                int commentId = Convert.ToInt32(e.CommandArgument);
 
-                }
-                else
-                {
-                    lblMessage.Text = "Geçersiz komut.";
-                }
+                // Yorum bilgilerini getir
+                LoadCommentForEditing(commentId);
             }
-            else
+            if (e.CommandName == "DeActiveComment")
             {
-                lblMessage.ForeColor = System.Drawing.Color.Red;
-                lblMessage.Text = "Geçersiz yorum ID'si.";
+                // Düzenlenecek yorumun ID'sini al
+                int commentId = Convert.ToInt32(e.CommandArgument);
+
+                // Yorum bilgilerini getir
+                DeactivateComment(commentId);
+
             }
         }
-
         private void LoadCommentForEditing(int commentId)
         {
-            // Kullanıcı oturumundan e-posta bilgisini alın
-            string currentUserEmail = Session["User"] as string;
 
-            // Eğer oturum bilgisi boşsa, işlem yapılmaz
-            if (string.IsNullOrEmpty(currentUserEmail))
-            {
-                lblMessage.Text = "Kullanıcı oturumu geçersiz.";
-                return;
-            }
+            string currentUserEmail = Session["User"] as string;
 
             try
             {
                 using (var connection = Connection.GetConnection())
                 {
-                    // Sorgu: Yorum sahibini ve metni al
                     string query = "SELECT email, CommentText FROM Comments WHERE id = @ID";
                     MySqlCommand command = new MySqlCommand(query, connection);
                     command.Parameters.AddWithValue("@ID", commentId);
 
-                    // Veritabanı bağlantısını aç
                     connection.Open();
-
                     using (var reader = command.ExecuteReader())
                     {
                         if (reader.Read())
                         {
-                            // Yorum sahibinin e-posta adresi ve yorum metni
                             string commentOwnerEmail = reader["email"].ToString();
                             string commentText = reader["CommentText"].ToString();
 
-                            // Kullanıcı yetkilendirme kontrolü
-                            if (!string.Equals(commentOwnerEmail, currentUserEmail, StringComparison.OrdinalIgnoreCase)
-                                && !IsAdmin(currentUserEmail))
+                            // Eğer yorum sahibi değilse ve admin değilse işlem yapılmaz
+                            if (commentOwnerEmail != currentUserEmail && !IsAdmin(currentUserEmail))
                             {
                                 lblMessage.Text = "Bu yorumu düzenleme yetkiniz yok.";
                                 return;
                             }
 
-                            // Düzenleme alanlarını doldur ve paneli görünür yap
+                            // Düzenleme alanını doldur
                             txtEditComment.Text = commentText;
                             hfCommentId.Value = commentId.ToString();
                             pnlEditComment.Visible = true;
@@ -473,12 +448,10 @@ namespace WebApplication.Template
             }
             catch (Exception ex)
             {
-                // Hata mesajını kullanıcıya göster
                 lblMessage.ForeColor = System.Drawing.Color.Red;
                 lblMessage.Text = $"Yorum düzenlenirken hata oluştu: {ex.Message}";
             }
         }
-
 
         protected void btnSaveComment_Click(object sender, EventArgs e)
         {
@@ -538,21 +511,14 @@ namespace WebApplication.Template
 
         private void DeactivateComment(int commentId)
         {
-            // Kullanıcı oturumundan e-posta bilgisi alınır
-            string currentUserEmail = Session["User"] as string;
 
-            // Eğer oturum bilgisi boşsa işlem yapılmaz
-            if (string.IsNullOrEmpty(currentUserEmail))
-            {
-                lblMessage.Text = "Kullanıcı oturumu geçersiz.";
-                return;
-            }
+            string currentUserEmail = Session["User"] as string;
 
             try
             {
                 using (var connection = Connection.GetConnection())
                 {
-                    // Yorumun varlığını ve sahibini kontrol eden sorgu
+                    // Silme işlemi için önce yorumu kontrol et
                     string checkQuery = "SELECT email FROM Comments WHERE id = @ID AND isActive = TRUE";
                     MySqlCommand checkCommand = new MySqlCommand(checkQuery, connection);
                     checkCommand.Parameters.AddWithValue("@ID", commentId);
@@ -564,23 +530,29 @@ namespace WebApplication.Template
                     {
                         string commentOwnerEmail = result.ToString();
 
-                        // Yorum sahibi mi veya admin mi kontrol edilir
-                        if (!string.Equals(commentOwnerEmail, currentUserEmail, StringComparison.OrdinalIgnoreCase)
-                            && !IsAdmin(currentUserEmail))
+                        // Eğer yorum sahibi değilse ve admin değilse işlem yapılmaz
+                        if (commentOwnerEmail != currentUserEmail && !IsAdmin(currentUserEmail))
                         {
                             lblMessage.Text = "Bu yorumu silme yetkiniz yok.";
                             return;
                         }
 
-                        // Yorumu pasif hale getiren sorgu
+                        // Yorumu pasif hale getir
                         string updateQuery = "UPDATE Comments SET isActive = FALSE WHERE id = @ID";
                         MySqlCommand updateCommand = new MySqlCommand(updateQuery, connection);
                         updateCommand.Parameters.AddWithValue("@ID", commentId);
-                        int rowsAffected = updateCommand.ExecuteNonQuery();
+                        updateCommand.ExecuteNonQuery();
 
-                        if (rowsAffected > 0)
-                        {
-                            lblMessage.Text = "Yorum başarıyla silindi.";
+
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        lblMessage.Text = "Yorum başarıyla silindi.";
 
                         LoadComments();
 
