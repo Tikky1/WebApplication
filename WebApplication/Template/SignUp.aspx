@@ -92,7 +92,7 @@
                 <button type="button" style="position: absolute; right: -50px; top: 0px;" onclick="togglePasswordVisibility()">👁</button>
             </div>
             <div style="margin-bottom: 20px;">
-                <asp:TextBox ID="txtEmail" runat="server" Placeholder="Email" Width="100%" />
+                <asp:TextBox ID="txtEmail" runat="server" Placeholder="Email" TextMode="Email" Width="100%" />
             </div>
             <div style="margin-bottom: 20px;">
                 <asp:TextBox ID="txtphoneNumber" runat="server" Placeholder="Phone" Width="100%" />
