@@ -74,7 +74,7 @@ namespace WebApplication.Template
             }
 
 
-            if (IsPostBack)
+            if (!IsPostBack)
             {
                 // Öğe sayısını kontrol edin
                 if (ddlCities.Items.Count == 1)

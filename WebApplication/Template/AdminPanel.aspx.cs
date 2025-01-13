@@ -19,6 +19,7 @@ namespace WebApplication.Template
     {
         protected async void Page_Load(object sender, EventArgs e)
         {
+            LoadComments();
             // Kullanıcı login olmadıysa Login sayfasına yönlendirme
             if (Session["User"] == null)
             {
@@ -74,7 +75,7 @@ namespace WebApplication.Template
             }
 
 
-            if (IsPostBack)
+            if (!IsPostBack)
             {
                 // Öğe sayısını kontrol edin
                 if (ddlCities.Items.Count == 1)
@@ -167,6 +168,8 @@ namespace WebApplication.Template
 
         protected void txtInput_TextChanged(object sender, EventArgs e)
         {
+
+            LoadComments();
             string cityName = txtCity.Text.Trim();
 
 
@@ -226,6 +229,7 @@ namespace WebApplication.Template
         }
         protected async void btnSearch_Click(object sender, EventArgs e)
         {
+            LoadComments();
             string city = txtCity.Text.Trim();
 
             ddlCities.Items.Clear();
