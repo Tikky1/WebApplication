@@ -19,6 +19,8 @@ namespace WebApplication.Template
     {
         protected async void Page_Load(object sender, EventArgs e)
         {
+
+            LoadComments();
             // Kullanıcı login olmadıysa Login sayfasına yönlendirme
             if (Session["User"] == null)
             {
@@ -140,14 +142,13 @@ namespace WebApplication.Template
         private async Task<string> GetCityIdFromAPI(string cityName)
         {
             string cityId = null;
-            string apiKey = "451ea1379d2c469747b294bf43a5462c";
-            string apiUrl = $"http://api.openweathermap.org/data/2.5/weather?q={cityName}&appid={apiKey}";
+            
 
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    HttpResponseMessage response = await client.GetAsync(apiUrl);
+                    HttpResponseMessage response = await client.GetAsync(Connection.ApiConnection(cityName));
                     if (response.IsSuccessStatusCode)
                     {
                         string responseBody = await response.Content.ReadAsStringAsync();
@@ -167,11 +168,6 @@ namespace WebApplication.Template
 
         protected void txtInput_TextChanged(object sender, EventArgs e)
         {
-            string cityName = txtCity.Text.Trim();
-
-
-
-
 
             ddlCities.Items.Clear();
             ddlCities.SelectedIndex = -1;
@@ -186,10 +182,7 @@ namespace WebApplication.Template
 
 
         }
-        protected void ddlCities_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            txtCity.Text = ddlCities.SelectedItem.ToString();
-        }
+        
 
 
         private string GetCityFromDatabase(string userEmail)
@@ -226,7 +219,13 @@ namespace WebApplication.Template
         }
         protected async void btnSearch_Click(object sender, EventArgs e)
         {
-            string city = txtCity.Text.Trim();
+            LoadComments();
+            string city = null;
+            if (ddlCities.SelectedItem.Value != null)
+            {
+                city = ddlCities.SelectedItem.Value;
+
+            }
 
             ddlCities.Items.Clear();
 
@@ -353,8 +352,36 @@ namespace WebApplication.Template
         }
         private void LoadComments()
         {
-            string City = txtCity.Text;
+            string email = Session["user"] as string;
+            string city = null;
+            using (var connection = Connection.GetConnection())
+            {
+                string query = "SELECT city as sehir from user where email = @email";
 
+
+                MySqlCommand command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Email", email); // userEmail değerini buraya ekleyin
+
+                connection.Open();
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read()) // Eğer sonuç dönerse
+                    {
+                        city = reader["sehir"].ToString(); // 'sehir' sütunundaki değeri al ve 'city' değişkenine ata
+                    }
+                }
+
+
+
+            }
+
+
+            if (ddlCities.SelectedItem != null && !string.IsNullOrEmpty(ddlCities.SelectedItem.Value))
+            {
+                city = ddlCities.SelectedItem.Value;
+
+            }
             try
             {
                 using (var connection = Connection.GetConnection())
@@ -365,7 +392,7 @@ namespace WebApplication.Template
                                    "ORDER BY CreatedAt DESC";
 
                     MySqlCommand command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@City", City);
+                    command.Parameters.AddWithValue("@City", city);
 
                     connection.Open();
 
@@ -383,7 +410,6 @@ namespace WebApplication.Template
                 lblMessage.ForeColor = System.Drawing.Color.Red;
                 lblMessage.Text = $"Yorumlar yüklenirken hata oluştu: {ex.Message}";
             }
-
         }
 
         protected void rptComments_ItemCommand(object source, RepeaterCommandEventArgs e)

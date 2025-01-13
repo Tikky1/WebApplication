@@ -168,13 +168,7 @@ namespace WebApplication.Template
 
         protected void txtInput_TextChanged(object sender, EventArgs e)
         {
-
-            LoadComments();
-            string cityName = txtCity.Text.Trim();
-
-
-
-
+            
 
             ddlCities.Items.Clear();
             ddlCities.SelectedIndex = -1;
@@ -189,10 +183,7 @@ namespace WebApplication.Template
 
 
         }
-        protected void ddlCities_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            txtCity.Text = ddlCities.SelectedItem.ToString();
-        }
+        
 
 
         private string GetCityFromDatabase(string userEmail)
@@ -230,7 +221,12 @@ namespace WebApplication.Template
         protected async void btnSearch_Click(object sender, EventArgs e)
         {
             LoadComments();
-            string city = txtCity.Text.Trim();
+            string city = null;
+            if (ddlCities.SelectedItem.Value != null)
+            {
+                city = ddlCities.SelectedItem.Value;
+                
+            }
 
             ddlCities.Items.Clear();
 
@@ -357,8 +353,36 @@ namespace WebApplication.Template
         }
         private void LoadComments()
         {
-            string City = txtCity.Text;
+            string email = Session["user"] as string;
+            string city = null;
+            using (var connection = Connection.GetConnection())
+            {
+                string query = "SELECT city as sehir from user where email = @email";
 
+
+                MySqlCommand command = new MySqlCommand(query, connection);
+                command.Parameters.AddWithValue("@Email", email); // userEmail değerini buraya ekleyin
+
+                connection.Open();
+
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    if (reader.Read()) // Eğer sonuç dönerse
+                    {
+                        city = reader["sehir"].ToString(); // 'sehir' sütunundaki değeri al ve 'city' değişkenine ata
+                    }
+                }
+
+
+
+            }
+
+
+            if (ddlCities.SelectedItem != null && !string.IsNullOrEmpty(ddlCities.SelectedItem.Value))
+            {
+                city = ddlCities.SelectedItem.Value;
+
+            }
             try
             {
                 using (var connection = Connection.GetConnection())
@@ -369,7 +393,7 @@ namespace WebApplication.Template
                                    "ORDER BY CreatedAt DESC";
 
                     MySqlCommand command = new MySqlCommand(query, connection);
-                    command.Parameters.AddWithValue("@City", City);
+                    command.Parameters.AddWithValue("@City", city);
 
                     connection.Open();
 

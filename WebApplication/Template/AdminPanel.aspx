@@ -127,7 +127,7 @@
             <h2>Hava Durumu</h2>
             <div class="search-bar">
                 <asp:TextBox ID="txtCity" runat="server" placeholder="Şehir adı girin" OnTextChanged="txtInput_TextChanged" AutoPostBack="True"></asp:TextBox>
-                <asp:DropDownList ID="ddlCities" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlCities_SelectedIndexChanged"></asp:DropDownList>
+                <asp:DropDownList ID="ddlCities" runat="server" AutoPostBack="true" ></asp:DropDownList>
                 <asp:RequiredFieldValidator ID="rfvCity" runat="server" ControlToValidate="txtCity" ErrorMessage="Şehir adı gereklidir." ValidationGroup="WeatherSearch" Display="Dynamic" ForeColor="Red" />
                 <asp:Button ID="btnSearch" runat="server" Text="Ara" OnClick="btnSearch_Click" ValidationGroup="WeatherSearch" />
             </div>
