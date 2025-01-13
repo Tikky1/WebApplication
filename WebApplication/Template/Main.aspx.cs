@@ -581,12 +581,9 @@ namespace WebApplication.Template
                         if (rowsAffected > 0)
                         {
                             lblMessage.Text = "Yorum başarıyla silindi.";
-                            LoadComments(); // Yorumlar yeniden yüklenir
-                        }
-                        else
-                        {
-                            lblMessage.Text = "Yorum silinemedi. Bir sorun oluştu.";
-                        }
+
+                        LoadComments();
+
                     }
                     else
                     {
